@@ -8,23 +8,53 @@
   <script src="https://www.gstatic.com/firebasejs/9.1.2/firebase-auth.js"></script>
   <script src="/js/firebase-config.js"></script>
   <script src="/js/auth.js"></script>
+  <link rel="stylesheet" href="/styles/styles.css">
 </head>
 <body>
-  <h1>User Profile</h1>
-  <div id="profile-info">
-    <p>Loading...</p>
-  </div>
-  <button onclick="auth.signOut()">Sign Out</button>
+  <header>
+    <h1>User Profile</h1>
+  </header>
+  <main>
+    <div id="profile-info">
+      <p>Loading...</p>
+    </div>
+    <button onclick="signOut()">Sign Out</button>
+  </main>
 
   <script>
+    // Function to get query parameter (user ID)
+    function getQueryParameter(name) {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get(name);
+    }
+
+    // Sign out function
+    function signOut() {
+      auth.signOut().then(() => {
+        window.location.href = '/login.html';
+      });
+    }
+
+    // Check if user is logged in and show their profile info
     auth.onAuthStateChanged(user => {
       if (user) {
-        // Fetch user profile info (for simplicity, just show email here)
-        document.getElementById('profile-info').innerHTML = `
-          <p>Username: ${user.email}</p>
-        `;
+        const userIdFromURL = getQueryParameter('id');
+        
+        if (userIdFromURL === user.uid) {
+          const userProfile = document.getElementById('profile-info');
+          userProfile.innerHTML = `
+            <h2>Welcome, ${user.email}</h2>
+            <p>User ID: ${user.uid}</p>
+            <p>Email: ${user.email}</p>
+            <p>Account created on: ${user.metadata.creationTime}</p>
+          `;
+        } else {
+          document.getElementById('profile-info').innerHTML = `
+            <p>Access denied. This page is not your profile.</p>
+          `;
+        }
       } else {
-        window.location.href = '/login.html';  // Redirect if not logged in
+        window.location.href = '/login.html';
       }
     });
   </script>
